@@ -340,6 +340,26 @@ class RetroAudioEngine {
     osc.start(now);
     osc.stop(now + 0.2);
   }
+
+  playStarCatch() {
+    if (!this.isSfxEnabled) return;
+    this.init();
+    const now = this.audioCtx.currentTime;
+    const osc = this.audioCtx.createOscillator();
+    const gain = this.audioCtx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(987.77, now); // B5
+    osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.12); // E6
+
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
 }
 
 // Instantiate audio engine
@@ -769,11 +789,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const hintModalBtn = document.getElementById('hintModalBtn');
   const typewriterText = document.getElementById('typewriterText');
 
-  // DOM Elements - Hint Modal
+  // DOM Elements - Hint Modal & Star Catcher Mini-Game
   const hintBackdrop = document.getElementById('hintBackdrop');
   const closeHintBtn = document.getElementById('closeHintBtn');
-  const extraClueToggle = document.getElementById('extraClueToggle');
-  const extraClueContent = document.getElementById('extraClueContent');
+  const miniGameCanvas = document.getElementById('miniGameCanvas');
+  const gameScore = document.getElementById('gameScore');
+  const gameHighScore = document.getElementById('gameHighScore');
+  const gameBtnLeft = document.getElementById('gameBtnLeft');
+  const gameBtnRight = document.getElementById('gameBtnRight');
+  const hintLockedBox = document.getElementById('hintLockedBox');
+  const hintUnlockedBox = document.getElementById('hintUnlockedBox');
+  const lockProgressFill = document.getElementById('lockProgressFill');
+  const starsNeededText = document.getElementById('starsNeededText');
 
   // DOM Elements - Stage 2 (Celebration)
   const celebrationStage = document.getElementById('celebrationStage');
@@ -875,19 +902,396 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
+  // --- Star Catcher Arcade Mini-Game Implementation ---
+  class StarCatcherMiniGame {
+    constructor(canvas) {
+      this.canvas = canvas;
+      this.ctx = canvas ? canvas.getContext('2d') : null;
+      this.width = 320;
+      this.height = 180;
+      this.isRunning = false;
+      this.animId = null;
+
+      this.score = 0;
+      this.targetScore = 5;
+      this.highScore = 0;
+      try {
+        this.highScore = parseInt(localStorage.getItem('raine_star_highscore') || '0', 10);
+      } catch (e) {
+        this.highScore = 0;
+      }
+      this.isUnlocked = false;
+
+      this.catcher = {
+        x: 136,
+        y: 152,
+        w: 48,
+        h: 18,
+        speed: 5.5
+      };
+
+      this.items = [];
+      this.particles = [];
+      this.bgStars = [];
+      this.spawnTimer = 0;
+
+      this.keys = { left: false, right: false };
+      this.isPointerDown = false;
+
+      this.initBgStars();
+      this.bindEvents();
+      this.updateHud();
+    }
+
+    initBgStars() {
+      this.bgStars = [];
+      for (let i = 0; i < 28; i++) {
+        this.bgStars.push({
+          x: Math.random() * this.width,
+          y: Math.random() * this.height,
+          size: Math.random() < 0.25 ? 2 : 1,
+          speed: 0.15 + Math.random() * 0.35,
+          twinkle: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    bindEvents() {
+      if (!this.canvas) return;
+
+      const handlePointer = (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.width / rect.width;
+        const canvasX = (e.clientX - rect.left) * scaleX;
+        this.catcher.x = Math.max(4, Math.min(this.width - this.catcher.w - 4, canvasX - this.catcher.w / 2));
+      };
+
+      this.canvas.addEventListener('pointerdown', (e) => {
+        this.isPointerDown = true;
+        handlePointer(e);
+      });
+
+      this.canvas.addEventListener('pointermove', (e) => {
+        if (this.isPointerDown || e.pointerType === 'mouse') {
+          handlePointer(e);
+        }
+      });
+
+      window.addEventListener('pointerup', () => {
+        this.isPointerDown = false;
+      });
+
+      // Mobile Touch Buttons
+      if (gameBtnLeft) {
+        const startLeft = (e) => { e.preventDefault(); this.keys.left = true; };
+        const endLeft = (e) => { e.preventDefault(); this.keys.left = false; };
+        gameBtnLeft.addEventListener('pointerdown', startLeft);
+        gameBtnLeft.addEventListener('pointerup', endLeft);
+        gameBtnLeft.addEventListener('pointerleave', endLeft);
+      }
+
+      if (gameBtnRight) {
+        const startRight = (e) => { e.preventDefault(); this.keys.right = true; };
+        const endRight = (e) => { e.preventDefault(); this.keys.right = false; };
+        gameBtnRight.addEventListener('pointerdown', startRight);
+        gameBtnRight.addEventListener('pointerup', endRight);
+        gameBtnRight.addEventListener('pointerleave', endRight);
+      }
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        if (hintBackdrop.classList.contains('hidden')) return;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          this.keys.left = true;
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          this.keys.right = true;
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          this.keys.left = false;
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          this.keys.right = false;
+        }
+      });
+    }
+
+    start() {
+      if (this.isRunning) return;
+      this.isRunning = true;
+      this.loop = () => {
+        if (!this.isRunning) return;
+        this.update();
+        this.render();
+        this.animId = requestAnimationFrame(this.loop);
+      };
+      this.animId = requestAnimationFrame(this.loop);
+    }
+
+    stop() {
+      this.isRunning = false;
+      if (this.animId) {
+        cancelAnimationFrame(this.animId);
+        this.animId = null;
+      }
+      this.keys.left = false;
+      this.keys.right = false;
+      this.isPointerDown = false;
+    }
+
+    update() {
+      // Button/Keyboard movement
+      if (this.keys.left) {
+        this.catcher.x = Math.max(4, this.catcher.x - this.catcher.speed);
+      }
+      if (this.keys.right) {
+        this.catcher.x = Math.min(this.width - this.catcher.w - 4, this.catcher.x + this.catcher.speed);
+      }
+
+      // Background stars
+      for (const s of this.bgStars) {
+        s.y += s.speed;
+        s.twinkle += 0.05;
+        if (s.y > this.height) {
+          s.y = 0;
+          s.x = Math.random() * this.width;
+        }
+      }
+
+      // Spawn items (stars and rare hearts)
+      this.spawnTimer++;
+      if (this.spawnTimer > 40) {
+        this.spawnTimer = 0;
+        const isHeart = Math.random() < 0.22;
+        this.items.push({
+          x: 15 + Math.random() * (this.width - 30),
+          y: -14,
+          w: 14,
+          h: 14,
+          speed: 1.5 + Math.random() * 0.9,
+          type: isHeart ? 'heart' : 'star'
+        });
+      }
+
+      // Update falling items
+      for (let i = this.items.length - 1; i >= 0; i--) {
+        const item = this.items[i];
+        item.y += item.speed;
+
+        // Collision detection with catcher
+        if (
+          item.y + item.h >= this.catcher.y &&
+          item.y <= this.catcher.y + this.catcher.h &&
+          item.x + item.w >= this.catcher.x &&
+          item.x <= this.catcher.x + this.catcher.w
+        ) {
+          const pts = item.type === 'heart' ? 2 : 1;
+          this.score += pts;
+          audioEngine.playStarCatch();
+          this.createCatchSparkles(item.x + item.w / 2, item.y + item.h / 2, item.type);
+
+          if (this.score > this.highScore) {
+            this.highScore = this.score;
+            try { localStorage.setItem('raine_star_highscore', this.highScore); } catch(e){}
+          }
+
+          this.updateHud();
+
+          if (this.score >= this.targetScore && !this.isUnlocked) {
+            this.unlockHint();
+          }
+
+          this.items.splice(i, 1);
+          continue;
+        }
+
+        if (item.y > this.height + 10) {
+          this.items.splice(i, 1);
+        }
+      }
+
+      // Particles
+      for (let i = this.particles.length - 1; i >= 0; i--) {
+        const p = this.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15;
+        p.life++;
+        if (p.life >= p.maxLife) {
+          this.particles.splice(i, 1);
+        }
+      }
+    }
+
+    createCatchSparkles(x, y, type) {
+      const color = type === 'heart' ? '#ec4899' : '#fbbf24';
+      for (let i = 0; i < 8; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 1.2 + Math.random() * 2.2;
+        this.particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd - 1,
+          size: Math.random() < 0.5 ? 3 : 2,
+          color,
+          life: 0,
+          maxLife: 18 + Math.floor(Math.random() * 8)
+        });
+      }
+    }
+
+    unlockHint() {
+      this.isUnlocked = true;
+      audioEngine.playSuccessFanfare();
+
+      for (let i = 0; i < 30; i++) {
+        const colors = ['#fbbf24', '#f472b6', '#a78bfa', '#38bdf8', '#4ade80'];
+        this.particles.push({
+          x: this.width / 2,
+          y: this.height / 2,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6 - 2,
+          size: 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          life: 0,
+          maxLife: 35 + Math.floor(Math.random() * 15)
+        });
+      }
+
+      if (hintLockedBox && hintUnlockedBox) {
+        hintLockedBox.classList.add('hidden');
+        hintUnlockedBox.classList.remove('hidden');
+      }
+
+      if (closeHintBtn) {
+        const textSpan = closeHintBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = "Got the Hint! ✨";
+      }
+    }
+
+    updateHud() {
+      if (gameScore) gameScore.textContent = this.score;
+      if (gameHighScore) gameHighScore.textContent = this.highScore;
+
+      const progress = Math.min(100, Math.round((this.score / this.targetScore) * 100));
+      if (lockProgressFill) lockProgressFill.style.width = progress + '%';
+
+      const remaining = Math.max(0, this.targetScore - this.score);
+      if (starsNeededText) starsNeededText.textContent = remaining;
+    }
+
+    render() {
+      if (!this.ctx) return;
+      const ctx = this.ctx;
+      ctx.imageSmoothingEnabled = false;
+
+      ctx.fillStyle = '#070318';
+      ctx.fillRect(0, 0, this.width, this.height);
+
+      ctx.strokeStyle = 'rgba(76, 29, 149, 0.22)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < this.width; x += 32) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, this.height);
+        ctx.stroke();
+      }
+
+      for (const s of this.bgStars) {
+        const alpha = 0.4 + 0.6 * Math.abs(Math.sin(s.twinkle));
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+      }
+
+      ctx.fillStyle = '#1e1145';
+      ctx.fillRect(0, 172, this.width, 8);
+      ctx.fillStyle = '#3b1d75';
+      ctx.fillRect(0, 170, this.width, 2);
+
+      // Render Falling Items
+      for (const item of this.items) {
+        const ix = Math.floor(item.x);
+        const iy = Math.floor(item.y);
+        if (item.type === 'heart') {
+          ctx.fillStyle = '#f43f5e';
+          ctx.fillRect(ix + 2, iy, 3, 2);
+          ctx.fillRect(ix + 7, iy, 3, 2);
+          ctx.fillRect(ix, iy + 2, 12, 4);
+          ctx.fillRect(ix + 2, iy + 6, 8, 2);
+          ctx.fillRect(ix + 4, iy + 8, 4, 2);
+          ctx.fillRect(ix + 5, iy + 10, 2, 1);
+          ctx.fillStyle = '#fda4af';
+          ctx.fillRect(ix + 2, iy + 2, 2, 2);
+        } else {
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(ix + 4, iy, 4, 12);
+          ctx.fillRect(ix, iy + 4, 12, 4);
+          ctx.fillRect(ix + 2, iy + 2, 8, 8);
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(ix + 4, iy + 4, 4, 4);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(ix + 5, iy + 5, 2, 2);
+        }
+      }
+
+      for (const p of this.particles) {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+      }
+
+      // Catcher Basket
+      const cx = Math.floor(this.catcher.x);
+      const cy = Math.floor(this.catcher.y);
+      const cw = this.catcher.w;
+      const ch = this.catcher.h;
+
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(cx + 4, cy + 2, cw - 8, ch - 2);
+
+      ctx.fillStyle = '#b45309';
+      for (let bx = cx + 6; bx < cx + cw - 6; bx += 6) {
+        ctx.fillRect(bx, cy + 4, 3, ch - 6);
+      }
+
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(cx + 2, cy, cw - 4, 3);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(cx + 4, cy, cw - 8, 1);
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(cx, cy + 2, 3, 5);
+      ctx.fillRect(cx + cw - 3, cy + 2, 3, 5);
+
+      ctx.fillStyle = '#ec4899';
+      ctx.fillRect(cx + cw / 2 - 2, cy + 5, 4, 4);
+      ctx.fillStyle = '#fbcfe8';
+      ctx.fillRect(cx + cw / 2 - 1, cy + 6, 2, 2);
+    }
+  }
+
+  const starGame = miniGameCanvas ? new StarCatcherMiniGame(miniGameCanvas) : null;
+
   // --- Hint Modal Interactions ---
   function openHintModal() {
     audioEngine.playClick();
     hintBackdrop.classList.remove('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'false');
     closeHintBtn.focus();
+    if (starGame) starGame.start();
   }
 
   function closeHintModal() {
     audioEngine.playClick();
+    if (starGame) starGame.stop();
     hintBackdrop.classList.add('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'true');
-    hintModalBtn.focus();
+    if (starGame && starGame.isUnlocked) {
+      codeInput.focus();
+    } else {
+      hintModalBtn.focus();
+    }
   }
 
   hintModalBtn.addEventListener('click', openHintModal);
@@ -902,21 +1306,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !hintBackdrop.classList.contains('hidden')) {
       closeHintModal();
-    }
-  });
-
-  // Extra Clue Accordion
-  extraClueToggle.addEventListener('click', () => {
-    audioEngine.playClick();
-    const isHidden = extraClueContent.classList.contains('hidden');
-    if (isHidden) {
-      extraClueContent.classList.remove('hidden');
-      extraClueToggle.setAttribute('aria-expanded', 'true');
-      extraClueToggle.querySelector('span').textContent = 'Whisper revealed! ✨';
-    } else {
-      extraClueContent.classList.add('hidden');
-      extraClueToggle.setAttribute('aria-expanded', 'false');
-      extraClueToggle.querySelector('span').textContent = 'Need a whisper from the stars? 🌙';
     }
   });
 
