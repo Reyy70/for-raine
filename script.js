@@ -801,6 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hintUnlockedBox = document.getElementById('hintUnlockedBox');
   const lockProgressFill = document.getElementById('lockProgressFill');
   const starsNeededText = document.getElementById('starsNeededText');
+  const skipGameBtn = document.getElementById('skipGameBtn');
 
   // DOM Elements - Stage 2 (Celebration)
   const celebrationStage = document.getElementById('celebrationStage');
@@ -913,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.animId = null;
 
       this.score = 0;
-      this.targetScore = 5;
+      this.targetScore = 3;
       this.highScore = 0;
       try {
         this.highScore = parseInt(localStorage.getItem('raine_star_highscore') || '0', 10);
@@ -923,11 +924,11 @@ document.addEventListener('DOMContentLoaded', () => {
       this.isUnlocked = false;
 
       this.catcher = {
-        x: 136,
+        x: 132,
         y: 152,
-        w: 48,
+        w: 56,
         h: 18,
-        speed: 5.5
+        speed: 6.5
       };
 
       this.items = [];
@@ -959,43 +960,57 @@ document.addEventListener('DOMContentLoaded', () => {
     bindEvents() {
       if (!this.canvas) return;
 
-      const handlePointer = (e) => {
+      const handlePointer = (clientX) => {
         const rect = this.canvas.getBoundingClientRect();
+        if (!rect.width) return;
         const scaleX = this.width / rect.width;
-        const canvasX = (e.clientX - rect.left) * scaleX;
+        const canvasX = (clientX - rect.left) * scaleX;
         this.catcher.x = Math.max(4, Math.min(this.width - this.catcher.w - 4, canvasX - this.catcher.w / 2));
       };
 
       this.canvas.addEventListener('pointerdown', (e) => {
         this.isPointerDown = true;
-        handlePointer(e);
+        try { this.canvas.setPointerCapture(e.pointerId); } catch(err){}
+        handlePointer(e.clientX);
       });
 
       this.canvas.addEventListener('pointermove', (e) => {
         if (this.isPointerDown || e.pointerType === 'mouse') {
-          handlePointer(e);
+          handlePointer(e.clientX);
         }
       });
 
-      window.addEventListener('pointerup', () => {
+      window.addEventListener('pointerup', (e) => {
         this.isPointerDown = false;
+        try { this.canvas.releasePointerCapture(e.pointerId); } catch(err){}
       });
 
-      // Mobile Touch Buttons
+      // Skip Game Button
+      if (skipGameBtn) {
+        skipGameBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          audioEngine.playClick();
+          this.unlockHint();
+        });
+      }
+
+      // Mobile Touch Buttons (Both step and hold)
       if (gameBtnLeft) {
-        const startLeft = (e) => { e.preventDefault(); this.keys.left = true; };
-        const endLeft = (e) => { e.preventDefault(); this.keys.left = false; };
-        gameBtnLeft.addEventListener('pointerdown', startLeft);
-        gameBtnLeft.addEventListener('pointerup', endLeft);
-        gameBtnLeft.addEventListener('pointerleave', endLeft);
+        gameBtnLeft.addEventListener('click', () => {
+          this.catcher.x = Math.max(4, this.catcher.x - 16);
+        });
+        gameBtnLeft.addEventListener('pointerdown', (e) => { e.preventDefault(); this.keys.left = true; });
+        gameBtnLeft.addEventListener('pointerup', (e) => { e.preventDefault(); this.keys.left = false; });
+        gameBtnLeft.addEventListener('pointerleave', (e) => { e.preventDefault(); this.keys.left = false; });
       }
 
       if (gameBtnRight) {
-        const startRight = (e) => { e.preventDefault(); this.keys.right = true; };
-        const endRight = (e) => { e.preventDefault(); this.keys.right = false; };
-        gameBtnRight.addEventListener('pointerdown', startRight);
-        gameBtnRight.addEventListener('pointerup', endRight);
-        gameBtnRight.addEventListener('pointerleave', endRight);
+        gameBtnRight.addEventListener('click', () => {
+          this.catcher.x = Math.min(this.width - this.catcher.w - 4, this.catcher.x + 16);
+        });
+        gameBtnRight.addEventListener('pointerdown', (e) => { e.preventDefault(); this.keys.right = true; });
+        gameBtnRight.addEventListener('pointerup', (e) => { e.preventDefault(); this.keys.right = false; });
+        gameBtnRight.addEventListener('pointerleave', (e) => { e.preventDefault(); this.keys.right = false; });
       }
 
       // Keyboard Controls
@@ -1288,29 +1303,40 @@ document.addEventListener('DOMContentLoaded', () => {
     hintBackdrop.classList.add('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'true');
     if (starGame && starGame.isUnlocked) {
-      codeInput.focus();
+      if (codeInput) {
+        codeInput.value = CORRECT_CODE;
+      }
+      const unlockSubmitBtn = document.getElementById('unlockSubmitBtn');
+      if (unlockSubmitBtn) {
+        unlockSubmitBtn.focus();
+      } else if (codeInput) {
+        codeInput.focus();
+      }
     } else {
-      hintModalBtn.focus();
+      if (hintModalBtn) hintModalBtn.focus();
     }
   }
 
-  hintModalBtn.addEventListener('click', openHintModal);
-  closeHintBtn.addEventListener('click', closeHintModal);
+  if (hintModalBtn) hintModalBtn.addEventListener('click', openHintModal);
+  if (closeHintBtn) closeHintBtn.addEventListener('click', closeHintModal);
 
-  hintBackdrop.addEventListener('click', (e) => {
-    if (e.target === hintBackdrop) {
-      closeHintModal();
-    }
-  });
+  if (hintBackdrop) {
+    hintBackdrop.addEventListener('click', (e) => {
+      if (e.target === hintBackdrop) {
+        closeHintModal();
+      }
+    });
+  }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !hintBackdrop.classList.contains('hidden')) {
+    if (e.key === 'Escape' && hintBackdrop && !hintBackdrop.classList.contains('hidden')) {
       closeHintModal();
     }
   });
 
   // --- Form Submission & Validation ---
-  unlockForm.addEventListener('submit', (e) => {
+  if (unlockForm) {
+    unlockForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const enteredName = (nameInput.value || '').trim();
@@ -1328,6 +1354,7 @@ document.addEventListener('DOMContentLoaded', () => {
       handleIncorrectAttempt(isNameCorrect);
     }
   });
+}
 
   function handleIncorrectAttempt(isNameCorrect) {
     audioEngine.playErrorSound();
