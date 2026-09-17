@@ -921,6 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.highScore = 0;
       }
       this.isUnlocked = false;
+      this.isCompleted = false;
 
       this.catcher = {
         x: 132,
@@ -983,15 +984,6 @@ document.addEventListener('DOMContentLoaded', () => {
         this.isPointerDown = false;
         try { this.canvas.releasePointerCapture(e.pointerId); } catch(err){}
       });
-
-      // Skip Game Button
-      if (skipGameBtn) {
-        skipGameBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          audioEngine.playClick();
-          this.unlockHint();
-        });
-      }
 
       // Mobile Touch Buttons (Both step and hold)
       if (gameBtnLeft) {
@@ -1057,6 +1049,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reset() {
       this.score = 0;
       this.isUnlocked = false;
+      this.isCompleted = false;
       this.items = [];
       this.particles = [];
       this.catcher.x = (this.width - this.catcher.w) / 2;
@@ -1070,6 +1063,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     update() {
+      // When 23 stars are reached, end the game (freeze items, drift stars)
+      if (this.isCompleted) {
+        for (const s of this.bgStars) {
+          s.y += s.speed * 0.4;
+          s.twinkle += 0.05;
+          if (s.y > this.height) {
+            s.y = 0;
+            s.x = Math.random() * this.width;
+          }
+        }
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1;
+          p.life++;
+          if (p.life >= p.maxLife) {
+            this.particles.splice(i, 1);
+          }
+        }
+        return;
+      }
+
       // Button/Keyboard movement
       if (this.keys.left) {
         this.catcher.x = Math.max(4, this.catcher.x - this.catcher.speed);
@@ -1117,6 +1133,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ) {
           const pts = item.type === 'heart' ? 2 : 1;
           this.score += pts;
+          if (this.score > this.targetScore) {
+            this.score = this.targetScore;
+          }
           audioEngine.playStarCatch();
           this.createCatchSparkles(item.x + item.w / 2, item.y + item.h / 2, item.type);
 
@@ -1127,8 +1146,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
           this.updateHud();
 
-          if (this.score >= this.targetScore && !this.isUnlocked) {
+          if (this.score >= this.targetScore && !this.isCompleted) {
             this.unlockHint();
+            break;
           }
 
           this.items.splice(i, 1);
@@ -1173,10 +1193,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     unlockHint() {
       this.isUnlocked = true;
+      this.isCompleted = true;
+      this.score = this.targetScore;
+      this.items = [];
+      this.updateHud();
       audioEngine.playSuccessFanfare();
 
-      for (let i = 0; i < 30; i++) {
-        const colors = ['#fbbf24', '#f472b6', '#a78bfa', '#38bdf8', '#4ade80'];
+      for (let i = 0; i < 40; i++) {
+        const colors = ['#fbbf24', '#f472b6', '#a78bfa', '#38bdf8', '#4ade80', '#ffffff'];
         this.particles.push({
           x: this.width / 2,
           y: this.height / 2,
@@ -1196,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (closeHintBtn) {
         const textSpan = closeHintBtn.querySelector('.btn-text');
-        if (textSpan) textSpan.textContent = "Use Hint (2003) & Close ✨";
+        if (textSpan) textSpan.textContent = "Got the Hint! ✨";
       }
     }
 
@@ -1297,6 +1321,25 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillRect(cx + cw / 2 - 2, cy + 5, 4, 4);
       ctx.fillStyle = '#fbcfe8';
       ctx.fillRect(cx + cw / 2 - 1, cy + 6, 2, 2);
+
+      // Victory overlay when game ends at 23 stars
+      if (this.isCompleted) {
+        ctx.fillStyle = 'rgba(7, 3, 24, 0.82)';
+        ctx.fillRect(16, 46, this.width - 32, 62);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(16, 46, this.width - 32, 62);
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('★ 23 / 23 STARS COLLECTED! ★', this.width / 2, 70);
+
+        ctx.fillStyle = '#f472b6';
+        ctx.font = '10px monospace';
+        ctx.fillText('SECRET HINT UNLOCKED BELOW ↓', this.width / 2, 90);
+        ctx.textAlign = 'left';
+      }
     }
   }
 
@@ -1321,18 +1364,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (starGame) starGame.stop();
     hintBackdrop.classList.add('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'true');
-    if (starGame && starGame.isUnlocked) {
-      if (codeInput) {
-        codeInput.value = CORRECT_CODE;
-      }
-      const unlockSubmitBtn = document.getElementById('unlockSubmitBtn');
-      if (unlockSubmitBtn) {
-        unlockSubmitBtn.focus();
-      } else if (codeInput) {
-        codeInput.focus();
-      }
-    } else {
-      if (hintModalBtn) hintModalBtn.focus();
+    if (codeInput) {
+      codeInput.focus();
     }
   }
 
