@@ -595,63 +595,39 @@ body.modal-open .app-viewport {
   width: 100%;
   height: 100%;
   height: 100dvh;
-  background: rgba(3, 1, 15, 0.82);
+  background: rgba(3, 1, 15, 0.85);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 200;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #a855f7 #09061c;
+  padding: 16px;
+  overflow: hidden;
   animation: fadeIn 0.25s ease;
   pointer-events: auto;
-  touch-action: pan-y;
 }
 
 .modal-backdrop.hidden {
   display: none !important;
 }
 
-/* Retro Pixel Scrollbar for Modal Backdrop */
-.modal-backdrop::-webkit-scrollbar {
-  width: 12px;
-}
-
-.modal-backdrop::-webkit-scrollbar-track {
-  background: #09061c;
-  box-shadow: inset -2px 0 0 0 #2e1065, inset 2px 0 0 0 #2e1065;
-}
-
-.modal-backdrop::-webkit-scrollbar-thumb {
-  background: #a855f7;
-  box-shadow:
-    inset 2px 2px 0 0 #e9d5ff,
-    inset -2px -2px 0 0 #6b21a8;
-  border-radius: 0;
-}
-
-.modal-backdrop::-webkit-scrollbar-thumb:hover {
-  background: #ffd166;
-  box-shadow:
-    inset 2px 2px 0 0 #fef08a,
-    inset -2px -2px 0 0 #b45309;
-}
-
 .hint-modal {
-  margin: auto;
-  max-width: 440px;
+  max-height: calc(100dvh - 32px);
+  max-height: calc(100vh - 32px);
   width: 100%;
+  max-width: 440px;
   background: #1e1548;
   text-align: center;
-  padding: 28px 20px;
+  padding: 24px 20px 20px;
   position: relative;
-  touch-action: pan-y;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin;
+  scrollbar-color: #a855f7 #09061c;
+  touch-action: pan-y !important;
   box-shadow:
     0 -4px 0 0 var(--accent-gold),
     0 4px 0 0 var(--accent-gold),
@@ -664,6 +640,70 @@ body.modal-open .app-viewport {
     0 16px 36px rgba(0, 0, 0, 0.8),
     0 0 30px rgba(251, 191, 36, 0.25);
   animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Retro Pixel Scrollbar for Hint Modal */
+.hint-modal::-webkit-scrollbar {
+  width: 10px;
+}
+
+.hint-modal::-webkit-scrollbar-track {
+  background: #09061c;
+  box-shadow: inset -2px 0 0 0 #2e1065, inset 2px 0 0 0 #2e1065;
+}
+
+.hint-modal::-webkit-scrollbar-thumb {
+  background: #a855f7;
+  box-shadow:
+    inset 2px 2px 0 0 #e9d5ff,
+    inset -2px -2px 0 0 #6b21a8;
+  border-radius: 0;
+}
+
+.hint-modal::-webkit-scrollbar-thumb:hover {
+  background: #ffd166;
+  box-shadow:
+    inset 2px 2px 0 0 #fef08a,
+    inset -2px -2px 0 0 #b45309;
+}
+
+/* Sticky Top Corner Close Button */
+.modal-close-top-btn {
+  position: sticky;
+  top: 4px;
+  float: right;
+  margin-top: -8px;
+  margin-right: -4px;
+  margin-bottom: -32px;
+  background: #3b1675;
+  color: #f472b6;
+  border: 2px solid #a855f7;
+  width: 34px;
+  height: 34px;
+  font-family: var(--font-silkscreen);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.modal-close-top-btn:hover {
+  background: #ec4899;
+  color: #fff;
+  border-color: #f472b6;
+  transform: scale(1.08);
+}
+
+.modal-close-top-btn:active {
+  transform: scale(0.92);
 }
 
 @keyframes modalPop {
@@ -1960,6 +2000,138 @@ body.modal-open .app-viewport {
   }
 }
 
+@media (max-width: 480px) {
+  .modal-backdrop {
+    padding: 8px;
+  }
+
+  .hint-modal {
+    max-height: calc(100dvh - 16px);
+    max-height: calc(100vh - 16px);
+    padding: 16px 12px 14px;
+  }
+
+  .modal-close-top-btn {
+    top: 2px;
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+
+  .hint-modal-header {
+    margin-bottom: 6px;
+  }
+
+  .hint-badge {
+    font-size: 1rem;
+    margin-bottom: 2px;
+    gap: 4px;
+  }
+
+  .hint-title {
+    font-size: 0.88rem;
+  }
+
+  .hint-subtitle {
+    font-size: 0.62rem;
+    margin-top: 2px;
+  }
+
+  .minigame-container {
+    margin: 6px 0 8px;
+    padding: 6px;
+  }
+
+  .minigame-hud {
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  .hud-tag {
+    font-size: 0.55rem;
+  }
+
+  .hud-num {
+    font-size: 1.05rem;
+  }
+
+  .game-screen-wrapper {
+    max-height: 140px;
+  }
+
+  .minigame-controls {
+    margin-top: 4px;
+    gap: 6px;
+  }
+
+  .game-touch-btn {
+    min-height: 32px;
+    padding: 4px 6px;
+    font-size: 0.62rem;
+  }
+
+  .game-control-tip {
+    font-size: 0.5rem;
+  }
+
+  .hint-lock-container {
+    margin: 6px 0 8px;
+  }
+
+  .hint-locked-box {
+    padding: 8px 10px;
+  }
+
+  .lock-indicator {
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+
+  .lock-icon {
+    font-size: 1rem;
+  }
+
+  .lock-text {
+    font-size: 0.68rem;
+  }
+
+  .lock-progress-bar-container {
+    height: 8px;
+    margin: 4px 0;
+  }
+
+  .lock-subtext {
+    font-size: 0.88rem;
+  }
+
+  .hint-unlocked-box {
+    padding: 8px 10px;
+  }
+
+  .hint-question {
+    font-size: 1.2rem;
+  }
+
+  .hint-clue {
+    font-size: 0.85rem;
+  }
+
+  .extra-clue-text {
+    font-size: 0.88rem;
+    padding: 6px;
+  }
+
+  .hint-actions {
+    margin-top: 8px;
+  }
+
+  .modal-close-btn {
+    padding: 8px 12px;
+    font-size: 0.72rem;
+    width: 100%;
+  }
+}
+
 @media (max-width: 420px) {
   .typewriter-heading {
     font-size: 0.88rem;
@@ -1979,7 +2151,7 @@ body.modal-open .app-viewport {
   }
 
   .hint-question {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
 }
 
