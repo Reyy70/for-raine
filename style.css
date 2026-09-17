@@ -823,6 +823,23 @@ html, body {
   margin-top: 4px;
 }
 
+.skip-game-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-silkscreen);
+  font-size: 0.65rem;
+  color: var(--primary-light);
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 8px;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.skip-game-btn:hover {
+  color: var(--accent-gold);
+}
+
 .hint-unlocked-box {
   background: rgba(25, 14, 62, 0.95);
   padding: 16px;
