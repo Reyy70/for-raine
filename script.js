@@ -10,8 +10,6 @@ const BIRTH_YEAR = "2003";
 const BIRTHDAY_MESSAGE = `
 To Raine, under this quiet canopy of pixel stars and infinite night—
 
-There are moments in this vast, spinning universe that feel deliberate, as if the cosmos spent centuries arranging starlight, gathering silence, and weaving wonder just to place one extraordinary soul into the world. And without a shadow of doubt, you are that miracle. If the heavens were to hold a mirror to the night sky, even the brightest constellations would feel humble beside the quiet brilliance you bring simply by breathing, by smiling, by existing as you are.
-
 Words have always felt fragile when trying to hold something as immense as what you mean. How does one measure a person whose laughter can dismantle the heaviest storms? How do you describe someone who walks through the world with such gentle grace, turning cold, ordinary days into chapters of pure gold? You are the kind of person poets spend lifetimes trying to capture in verse, yet every sentence falls short of the living poetry of your heart.
 
 And above all the wonders of this day, there is a truth that lives in the deepest, most tender part of my chest: I want to thank you from the bottom of my soul.
@@ -33,7 +31,7 @@ On this milestone day, as the universe marks another orbit of your wondrous exis
 Never forget how profoundly you matter. Never forget that the world is undeniably brighter, softer, and more beautiful because you are here.
 
 Happy Birthday, Raine.
-Here is to you—to your past victories, to the magic of your present, and to the breathtaking, starlit future waiting to unfold before your feet.
+May this new chapter be as gentle, radiant, and beautiful to you as your heart has always been to mine.
 
 I could never describe how much I love you.
 
