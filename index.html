@@ -184,24 +184,67 @@
         <div class="hint-modal-header">
           <div class="hint-badge" aria-hidden="true">
             <span class="hint-badge-star">★</span>
-            <span class="hint-badge-scroll">📜</span>
+            <span class="hint-badge-arcade">🎮</span>
             <span class="hint-badge-star">★</span>
           </div>
-          <h2 id="hintTitle" class="hint-title">Magic Scroll Clue</h2>
+          <h2 id="hintTitle" class="hint-title">STAR CATCHER ARCADE</h2>
+          <p class="hint-subtitle">Catch 5 falling stars to unlock the secret hint! ⭐</p>
         </div>
 
-        <div class="hint-content">
-          <p id="hintQuestion" class="hint-question">In what year were you born?</p>
-          <p id="hintDesc" class="hint-clue">A little clue to unlock your surprise... ✨</p>
-          
-          <!-- Optional Accordion / Extra Clue for playfulness -->
-          <div class="extra-clue-container">
-            <button type="button" id="extraClueToggle" class="extra-clue-btn" aria-expanded="false">
-              <span>Need a whisper from the stars? 🌙</span>
+        <!-- Arcade Mini Game Container -->
+        <div class="minigame-container">
+          <!-- Game HUD -->
+          <div class="minigame-hud">
+            <div class="hud-box"><span class="hud-tag">SCORE</span> <span id="gameScore" class="hud-num">0</span></div>
+            <div class="hud-box goal"><span class="hud-tag">GOAL</span> <span class="hud-num gold">5 ⭐</span></div>
+            <div class="hud-box"><span class="hud-tag">BEST</span> <span id="gameHighScore" class="hud-num">0</span></div>
+          </div>
+
+          <!-- Retro CRT Canvas Screen -->
+          <div class="game-screen-wrapper">
+            <canvas id="miniGameCanvas" width="320" height="180" aria-label="Star Catcher Mini Game"></canvas>
+            <div class="crt-scanline-overlay" aria-hidden="true"></div>
+          </div>
+
+          <!-- Touch / Mouse Control Buttons for Mobile & Desktop -->
+          <div class="minigame-controls" aria-label="Game Controls">
+            <button type="button" id="gameBtnLeft" class="pixel-btn pixel-btn-secondary game-touch-btn" aria-label="Move Left">
+              ◀ LEFT
             </button>
-            <div id="extraClueContent" class="extra-clue-content hidden">
+            <div class="game-control-tip">Drag or use ◀ ▶ keys</div>
+            <button type="button" id="gameBtnRight" class="pixel-btn pixel-btn-secondary game-touch-btn" aria-label="Move Right">
+              RIGHT ▶
+            </button>
+          </div>
+        </div>
+
+        <!-- Hint Section: Locked Until Goal Reached -->
+        <div id="hintLockContainer" class="hint-lock-container">
+          <!-- Locked State -->
+          <div id="hintLockedBox" class="hint-locked-box">
+            <div class="lock-indicator" aria-hidden="true">
+              <span class="lock-icon">🔒</span>
+              <span class="lock-text">HINT IS LOCKED</span>
+            </div>
+            <div class="lock-progress-bar-container" aria-label="Hint Unlock Progress">
+              <div id="lockProgressFill" class="lock-progress-fill" style="width: 0%"></div>
+            </div>
+            <p id="lockSubtext" class="lock-subtext">Catch <span id="starsNeededText">5</span> more stars to reveal the clue!</p>
+          </div>
+
+          <!-- Unlocked State -->
+          <div id="hintUnlockedBox" class="hint-unlocked-box hidden">
+            <div class="unlock-banner" aria-live="polite">
+              <span class="unlock-sparkle">✨</span>
+              <span>SECRET HINT UNLOCKED!</span>
+              <span class="unlock-sparkle">✨</span>
+            </div>
+            <p id="hintQuestion" class="hint-question">In what year were you born?</p>
+            <p id="hintDesc" class="hint-clue">A little clue to unlock your surprise... ✨</p>
+            
+            <div class="extra-clue-container">
               <p class="extra-clue-text" id="extraClueText">
-                "Count back two decades and three extra orbits around the sun... 🎂"
+                "Count back two decades and three extra orbits around the sun... 🎂 (2003)"
               </p>
             </div>
           </div>
@@ -209,7 +252,7 @@
 
         <div class="hint-actions">
           <button type="button" id="closeHintBtn" class="pixel-btn pixel-btn-primary modal-close-btn">
-            <span class="btn-text">Got it! ✨</span>
+            <span class="btn-text">Back to Secret Code</span>
           </button>
         </div>
       </div>
