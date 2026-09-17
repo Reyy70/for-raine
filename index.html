@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Just a Little Something ✨</title>
+  <meta name="description" content="A little something created just for you ✨">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Ambient Audio Indicator / Toggle -->
+  <aside class="audio-control-bar" aria-label="Audio Controls">
+    <button id="musicToggleBtn" class="pixel-btn-icon" aria-label="Toggle Background Music" title="Toggle Music">
+      <span class="music-icon" aria-hidden="true">🎵</span>
+      <span class="music-text">Music: OFF</span>
+      <span class="music-notes" aria-hidden="true">
+        <span class="note note-1">♪</span>
+        <span class="note note-2">♫</span>
+      </span>
+    </button>
+    <button id="soundToggleBtn" class="pixel-btn-icon" aria-label="Toggle Sound Effects" title="Toggle Sound Effects">
+      <span class="sfx-icon" aria-hidden="true">🔊</span>
+      <span class="sfx-text">SFX: ON</span>
+    </button>
+  </aside>
+
+  <!-- Background Sky & Celestial Canvas -->
+  <canvas id="skyCanvas" class="sky-canvas" aria-hidden="true"></canvas>
+
+  <!-- Celebration Confetti & Sparkle Canvas -->
+  <canvas id="partyCanvas" class="party-canvas" aria-hidden="true"></canvas>
+
+  <!-- Screen Flash for Transitions -->
+  <div id="screenFlash" class="screen-flash" aria-hidden="true"></div>
+
+  <!-- MAIN WRAPPER -->
+  <main class="app-viewport">
+
+    <!-- ==============================================
+         STAGE 1: MAGICAL UNLOCK SCREEN
+         ============================================== -->
+    <section id="unlockStage" class="stage unlock-stage active" aria-labelledby="unlockHeading">
+      <div class="pixel-card unlock-card" id="unlockCard">
+        <!-- Pixel Decorative Corners -->
+        <div class="letter-corner corner-tl" aria-hidden="true"></div>
+        <div class="letter-corner corner-tr" aria-hidden="true"></div>
+        <div class="letter-corner corner-bl" aria-hidden="true"></div>
+        <div class="letter-corner corner-br" aria-hidden="true"></div>
+
+        <div class="stage-level-badge" aria-hidden="true">
+          <span class="badge-bracket">[</span>
+          <span class="badge-core">★ STAGE 01: SECRET GATEWAY ★</span>
+          <span class="badge-bracket">]</span>
+        </div>
+
+        <!-- Decorative Pixel Lock / Envelope Badge -->
+        <div class="lock-badge-wrapper" aria-hidden="true">
+          <div class="pixel-lock-icon">
+            <svg viewBox="0 0 32 32" class="pixel-svg" width="48" height="48">
+              <!-- Pixel Lock Icon -->
+              <rect x="10" y="4" width="12" height="4" fill="#ffd166"/>
+              <rect x="8" y="8" width="4" height="6" fill="#ffd166"/>
+              <rect x="20" y="8" width="4" height="6" fill="#ffd166"/>
+              <rect x="6" y="14" width="20" height="14" fill="#a855f7"/>
+              <rect x="8" y="16" width="16" height="10" fill="#7e22ce"/>
+              <rect x="14" y="18" width="4" height="4" fill="#ffd166"/>
+              <rect x="15" y="22" width="2" height="3" fill="#ffd166"/>
+              <!-- Sparkles -->
+              <rect x="3" y="6" width="2" height="2" fill="#fef08a"/>
+              <rect x="26" y="10" width="2" height="2" fill="#fef08a"/>
+              <rect x="24" y="24" width="2" height="2" fill="#fef08a"/>
+            </svg>
+          </div>
+        </div>
+
+        <header class="unlock-header">
+          <h1 id="unlockHeading" class="pixel-title typewriter-heading">
+            <span class="typewriter-text" id="typewriterText">A magical surprise is locked away...</span>
+            <span class="typewriter-cursor"></span>
+          </h1>
+          <p class="unlock-subtitle">Only someone special can unlock it. ✨</p>
+        </header>
+
+        <!-- Unlock Form -->
+        <form id="unlockForm" class="unlock-form" novalidate autocomplete="off">
+          <!-- Name Input Group -->
+          <div class="pixel-input-group">
+            <label for="nameInput" class="pixel-label">
+              <span class="label-star" aria-hidden="true">★</span> What's your name?
+            </label>
+            <div class="pixel-input-wrapper">
+              <input 
+                type="text" 
+                id="nameInput" 
+                class="pixel-input" 
+                placeholder="Enter your name..." 
+                required 
+                maxlength="30"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <span class="input-glow" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <!-- Secret Code Input Group -->
+          <div class="pixel-input-group">
+            <label for="codeInput" class="pixel-label">
+              <span class="label-star" aria-hidden="true">★</span> Enter the secret code
+            </label>
+            <div class="pixel-input-wrapper with-toggle">
+              <input 
+                type="password" 
+                id="codeInput" 
+                class="pixel-input" 
+                placeholder="Type the magic code..." 
+                required 
+                maxlength="20"
+                autocomplete="off"
+              />
+              <button 
+                type="button" 
+                id="toggleCodeVisibility" 
+                class="code-toggle-btn" 
+                aria-label="Show or hide secret code" 
+                title="Show / Hide Code"
+              >
+                <span id="toggleIcon" class="toggle-icon" aria-hidden="true">👁️</span>
+              </button>
+              <span class="input-glow" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <!-- Playful Error Notification -->
+          <div id="errorMsg" class="pixel-error-box hidden" role="alert" aria-live="assertive">
+            <span class="error-sparkle" aria-hidden="true">✨</span>
+            <span class="error-text" id="errorText">Hmm... the magic words don't seem right ✨</span>
+          </div>
+
+          <!-- Primary Unlock Button -->
+          <div class="form-actions">
+            <button type="submit" id="unlockSubmitBtn" class="pixel-btn pixel-btn-primary">
+              <span class="btn-text">OPEN YOUR SURPRISE ✨</span>
+              <span class="btn-shine" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Hint Section Button -->
+        <footer class="unlock-footer">
+          <button type="button" id="hintModalBtn" class="pixel-btn pixel-btn-secondary hint-btn">
+            <span class="hint-icon" aria-hidden="true">💡</span>
+            <span class="btn-text">HINT ✨</span>
+          </button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         HINT MODAL
+         ============================================== -->
+    <div id="hintBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+      <div 
+        id="hintDialog" 
+        class="pixel-card hint-modal" 
+        role="dialog" 
+        aria-modal="true" 
+        aria-labelledby="hintTitle" 
+        aria-describedby="hintDesc"
+      >
+        <div class="modal-corner top-left" aria-hidden="true"></div>
+        <div class="modal-corner top-right" aria-hidden="true"></div>
+        <div class="modal-corner bottom-left" aria-hidden="true"></div>
+        <div class="modal-corner bottom-right" aria-hidden="true"></div>
+
+        <div class="hint-modal-header">
+          <div class="hint-badge" aria-hidden="true">
+            <span class="hint-badge-star">★</span>
+            <span class="hint-badge-scroll">📜</span>
+            <span class="hint-badge-star">★</span>
+          </div>
+          <h2 id="hintTitle" class="hint-title">Magic Scroll Clue</h2>
+        </div>
+
+        <div class="hint-content">
+          <p id="hintQuestion" class="hint-question">In what year were you born?</p>
+          <p id="hintDesc" class="hint-clue">A little clue to unlock your surprise... ✨</p>
+          
+          <!-- Optional Accordion / Extra Clue for playfulness -->
+          <div class="extra-clue-container">
+            <button type="button" id="extraClueToggle" class="extra-clue-btn" aria-expanded="false">
+              <span>Need a whisper from the stars? 🌙</span>
+            </button>
+            <div id="extraClueContent" class="extra-clue-content hidden">
+              <p class="extra-clue-text" id="extraClueText">
+                "Count back two decades and three extra orbits around the sun... 🎂"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hint-actions">
+          <button type="button" id="closeHintBtn" class="pixel-btn pixel-btn-primary modal-close-btn">
+            <span class="btn-text">Got it! ✨</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         STAGE 2: MAGICAL BIRTHDAY CELEBRATION
+         ============================================== -->
+    <section id="celebrationStage" class="stage celebration-stage hidden" aria-labelledby="celebrationHeading">
+      
+      <!-- Floating Pixel Balloons Left & Right -->
+      <div class="balloon-cluster left" aria-hidden="true">
+        <div class="pixel-balloon balloon-pink" style="--float-delay: 0s; --sway-speed: 3.2s;">
+          <div class="balloon-body"></div>
+          <div class="balloon-knot"></div>
+          <div class="balloon-string"></div>
+        </div>
+        <div class="pixel-balloon balloon-lavender" style="--float-delay: 1.5s; --sway-speed: 2.7s;">
+          <div class="balloon-body"></div>
+          <div class="balloon-knot"></div>
+          <div class="balloon-string"></div>
+        </div>
+        <div class="pixel-balloon balloon-gold" style="--float-delay: 0.8s; --sway-speed: 3.5s;">
+          <div class="balloon-body"></div>
+          <div class="balloon-knot"></div>
+          <div class="balloon-string"></div>
+        </div>
+      </div>
+
+      <div class="balloon-cluster right" aria-hidden="true">
+        <div class="pixel-balloon balloon-cyan" style="--float-delay: 0.4s; --sway-speed: 3.0s;">
+          <div class="balloon-body"></div>
+          <div class="balloon-knot"></div>
+          <div class="balloon-string"></div>
+        </div>
+        <div class="pixel-balloon balloon-peach" style="--float-delay: 1.8s; --sway-speed: 2.8s;">
+          <div class="balloon-body"></div>
+          <div class="balloon-knot"></div>
+          <div class="balloon-string"></div>
+        </div>
+        <div class="pixel-balloon balloon-pink" style="--float-delay: 1.1s; --sway-speed: 3.4s;">
+          <div class="balloon-body"></div>
+          <div class="balloon-knot"></div>
+          <div class="balloon-string"></div>
+        </div>
+      </div>
+
+      <!-- Main Celebration Content Wrapper -->
+      <div class="celebration-container">
+
+        <!-- Top Greeting Banner -->
+        <header class="celebration-header">
+          <div class="banner-sparkles top-sparkles" aria-hidden="true">
+            <span class="sparkle s1">✦</span>
+            <span class="sparkle s2">★</span>
+            <span class="sparkle s3">✦</span>
+            <span class="sparkle s4">★</span>
+          </div>
+
+          <h1 id="celebrationHeading" class="celebration-title">
+            <span class="title-line-1 pixel-reveal-text" id="titleLine1">HAPPY BIRTHDAY</span>
+            <span class="title-line-2 pixel-reveal-name" id="titleLine2">
+              <span class="name-text" id="celebrationName">RAINE</span> 
+              <span class="cake-emoji">🎂✨</span>
+            </span>
+          </h1>
+
+          <div class="banner-badge">
+            <span class="badge-icon">🌟</span>
+            <span class="badge-text">LEVEL 2003 COMPLETE &bull; A NEW ADVENTURE BEGINS</span>
+            <span class="badge-icon">🌟</span>
+          </div>
+        </header>
+
+        <!-- Centerpiece: Pixel Birthday Cake & Make a Wish -->
+        <div class="cake-stage-wrapper">
+          <div class="pixel-cake-container" id="pixelCake" role="button" tabindex="0" aria-label="Interactive Birthday Cake. Click to blow out candles and make a wish!">
+            
+            <!-- SVG Pixel Cake for Crisp High-Res Pixel Art -->
+            <svg class="pixel-cake-svg" viewBox="0 0 120 120" width="220" height="220" shape-rendering="crispEdges">
+              <!-- Cake Plate -->
+              <rect x="18" y="104" width="84" height="4" fill="#64748b"/>
+              <rect x="14" y="108" width="92" height="4" fill="#475569"/>
+              <rect x="22" y="112" width="76" height="3" fill="#334155"/>
+
+              <!-- BOTTOM TIER (Vanilla & Strawberry Velvet) -->
+              <rect x="24" y="80" width="72" height="24" fill="#f472b6"/>
+              <rect x="24" y="86" width="72" height="4" fill="#ec4899"/>
+              <rect x="24" y="94" width="72" height="4" fill="#db2777"/>
+              <!-- Bottom Tier Frosting Drips -->
+              <rect x="24" y="76" width="72" height="6" fill="#fdf2f8"/>
+              <rect x="28" y="82" width="6" height="6" fill="#fdf2f8"/>
+              <rect x="42" y="82" width="6" height="8" fill="#fdf2f8"/>
+              <rect x="56" y="82" width="6" height="5" fill="#fdf2f8"/>
+              <rect x="70" y="82" width="6" height="7" fill="#fdf2f8"/>
+              <rect x="84" y="82" width="6" height="4" fill="#fdf2f8"/>
+              <!-- Sprinkles on Bottom Tier -->
+              <rect x="32" y="90" width="3" height="3" fill="#fde047"/>
+              <rect x="50" y="92" width="3" height="3" fill="#38bdf8"/>
+              <rect x="66" y="90" width="3" height="3" fill="#a7f3d0"/>
+              <rect x="80" y="92" width="3" height="3" fill="#fef08a"/>
+
+              <!-- MIDDLE TIER (Lavender Cloud Cream) -->
+              <rect x="34" y="56" width="52" height="20" fill="#c084fc"/>
+              <rect x="34" y="62" width="52" height="4" fill="#a855f7"/>
+              <rect x="34" y="70" width="52" height="4" fill="#9333ea"/>
+              <!-- Middle Tier Frosting Drips -->
+              <rect x="34" y="52" width="52" height="6" fill="#faf5ff"/>
+              <rect x="38" y="58" width="5" height="6" fill="#faf5ff"/>
+              <rect x="50" y="58" width="5" height="7" fill="#faf5ff"/>
+              <rect x="64" y="58" width="5" height="5" fill="#faf5ff"/>
+              <rect x="76" y="58" width="5" height="6" fill="#faf5ff"/>
+              <!-- Sprinkles on Middle Tier -->
+              <rect x="42" y="66" width="3" height="3" fill="#f43f5e"/>
+              <rect x="58" y="66" width="3" height="3" fill="#fde047"/>
+              <rect x="72" y="64" width="3" height="3" fill="#38bdf8"/>
+
+              <!-- TOP TIER (Peach Starlight) -->
+              <rect x="44" y="38" width="32" height="14" fill="#fb923c"/>
+              <rect x="44" y="44" width="32" height="3" fill="#f97316"/>
+              <!-- Top Frosting Drips -->
+              <rect x="44" y="34" width="32" height="5" fill="#fff7ed"/>
+              <rect x="47" y="39" width="4" height="4" fill="#fff7ed"/>
+              <rect x="58" y="39" width="4" height="5" fill="#fff7ed"/>
+              <rect x="68" y="39" width="4" height="4" fill="#fff7ed"/>
+
+              <!-- Cherries on Top -->
+              <rect x="48" y="30" width="4" height="4" fill="#ef4444"/>
+              <rect x="50" y="27" width="2" height="3" fill="#15803d"/>
+              <rect x="68" y="30" width="4" height="4" fill="#ef4444"/>
+              <rect x="70" y="27" width="2" height="3" fill="#15803d"/>
+
+              <!-- CANDLES & FLAMES (3 Candles) -->
+              <!-- Candle 1 (Left) -->
+              <rect x="50" y="16" width="4" height="18" fill="#38bdf8"/>
+              <rect x="50" y="20" width="4" height="3" fill="#0284c7"/>
+              <rect x="50" y="26" width="4" height="3" fill="#0284c7"/>
+              <rect x="51" y="13" width="2" height="3" fill="#475569"/>
+
+              <!-- Candle 2 (Center - Tallest) -->
+              <rect x="58" y="12" width="4" height="22" fill="#ffd166"/>
+              <rect x="58" y="16" width="4" height="3" fill="#f59e0b"/>
+              <rect x="58" y="22" width="4" height="3" fill="#f59e0b"/>
+              <rect x="59" y="9" width="2" height="3" fill="#475569"/>
+
+              <!-- Candle 3 (Right) -->
+              <rect x="66" y="16" width="4" height="18" fill="#ec4899"/>
+              <rect x="66" y="20" width="4" height="3" fill="#db2777"/>
+              <rect x="66" y="26" width="4" height="3" fill="#db2777"/>
+              <rect x="67" y="13" width="2" height="3" fill="#475569"/>
+
+              <!-- FLAMES (Grouped for Animation and Blow-Out) -->
+              <g id="cakeFlames" class="cake-flames">
+                <!-- Flame 1 -->
+                <g class="flame flame-1">
+                  <rect x="50" y="5" width="4" height="7" fill="#fbbf24"/>
+                  <rect x="51" y="7" width="2" height="4" fill="#fffbeb"/>
+                  <rect x="49" y="7" width="1" height="3" fill="#f97316"/>
+                  <rect x="54" y="7" width="1" height="3" fill="#f97316"/>
+                </g>
+
+                <!-- Flame 2 (Center) -->
+                <g class="flame flame-2">
+                  <rect x="58" y="1" width="4" height="7" fill="#fbbf24"/>
+                  <rect x="59" y="3" width="2" height="4" fill="#fffbeb"/>
+                  <rect x="57" y="3" width="1" height="3" fill="#f97316"/>
+                  <rect x="62" y="3" width="1" height="3" fill="#f97316"/>
+                </g>
+
+                <!-- Flame 3 -->
+                <g class="flame flame-3">
+                  <rect x="66" y="5" width="4" height="7" fill="#fbbf24"/>
+                  <rect x="67" y="7" width="2" height="4" fill="#fffbeb"/>
+                  <rect x="65" y="7" width="1" height="3" fill="#f97316"/>
+                  <rect x="70" y="7" width="1" height="3" fill="#f97316"/>
+                </g>
+              </g>
+
+              <!-- SMOKE TRAILS (Revealed when blown out) -->
+              <g id="cakeSmoke" class="cake-smoke hidden">
+                <rect x="51" y="6" width="2" height="2" fill="#cbd5e1" class="smoke-puff p1"/>
+                <rect x="59" y="2" width="2" height="2" fill="#cbd5e1" class="smoke-puff p2"/>
+                <rect x="67" y="6" width="2" height="2" fill="#cbd5e1" class="smoke-puff p3"/>
+              </g>
+            </svg>
+
+            <!-- Floating Wish Interaction Callout -->
+            <div class="cake-prompt-badge">
+              <span class="prompt-icon">🕯️</span>
+              <span class="prompt-text" id="cakePromptText">Click the candles to make a wish!</span>
+            </div>
+          </div>
+
+          <!-- Wish Celebration Banner (Appears after blowing candles) -->
+          <div id="wishBanner" class="wish-banner hidden" role="status" aria-live="polite">
+            <span class="wish-sparkle">✨</span>
+            <span class="wish-text">Your birthday wish has been carried to the stars! ✨</span>
+            <span class="wish-sparkle">✨</span>
+          </div>
+        </div>
+
+        <!-- Heartfelt Birthday Message Parchment Letter (Retro RPG Dialogue Box) -->
+        <article class="birthday-letter-card pixel-card rpg-dialogue-card" id="birthdayLetterCard">
+          <!-- Pixel Decorative Corners -->
+          <div class="letter-corner corner-tl" aria-hidden="true"></div>
+          <div class="letter-corner corner-tr" aria-hidden="true"></div>
+          <div class="letter-corner corner-bl" aria-hidden="true"></div>
+          <div class="letter-corner corner-br" aria-hidden="true"></div>
+
+          <!-- Decorative Pixel Floral Accents -->
+          <div class="letter-flower-bar" aria-hidden="true">
+            <span class="pixel-deco-flower left">🌸</span>
+            <span class="pixel-deco-star">✨</span>
+            <span class="pixel-deco-tag">★ SECRET MESSAGE UNLOCKED ★</span>
+            <span class="pixel-deco-star">✨</span>
+            <span class="pixel-deco-flower right">🌸</span>
+          </div>
+
+          <div class="letter-seal" aria-hidden="true">
+            <span class="seal-heart">💖</span>
+          </div>
+          
+          <!-- Retro RPG Speaker Bar with Pixel Avatar Portrait -->
+          <header class="letter-header rpg-header">
+            <div class="rpg-avatar-frame" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="pixel-avatar-svg" width="48" height="48" shape-rendering="crispEdges">
+                <!-- Retro Pixel Party Fairy Avatar -->
+                <!-- Hat -->
+                <rect x="11" y="2" width="2" height="2" fill="#ffd166"/>
+                <rect x="10" y="4" width="4" height="2" fill="#ec4899"/>
+                <rect x="9" y="6" width="6" height="2" fill="#ec4899"/>
+                <rect x="8" y="8" width="8" height="2" fill="#a855f7"/>
+                <!-- Hair -->
+                <rect x="7" y="10" width="10" height="3" fill="#6d28d9"/>
+                <rect x="6" y="12" width="2" height="6" fill="#6d28d9"/>
+                <rect x="16" y="12" width="2" height="6" fill="#6d28d9"/>
+                <!-- Face -->
+                <rect x="8" y="11" width="8" height="7" fill="#fde68a"/>
+                <!-- Eyes -->
+                <rect x="9" y="13" width="2" height="2" fill="#1e1b4b"/>
+                <rect x="13" y="13" width="2" height="2" fill="#1e1b4b"/>
+                <!-- Blush -->
+                <rect x="8" y="15" width="2" height="1" fill="#f43f5e"/>
+                <rect x="14" y="15" width="2" height="1" fill="#f43f5e"/>
+                <!-- Smile -->
+                <rect x="11" y="16" width="2" height="1" fill="#be185d"/>
+                <!-- Body / Collar -->
+                <rect x="8" y="18" width="8" height="4" fill="#38bdf8"/>
+                <rect x="11" y="18" width="2" height="3" fill="#ffffff"/>
+                <!-- Sparkle on Avatar -->
+                <rect x="2" y="5" width="2" height="2" fill="#ffd166"/>
+                <rect x="20" y="7" width="2" height="2" fill="#ffd166"/>
+              </svg>
+            </div>
+            <div class="rpg-speaker-info">
+              <span class="letter-tag">A HEARTFELT LETTER</span>
+              <h2 class="letter-title">To the One and Only Raine</h2>
+              <div class="letter-divider" aria-hidden="true">
+                <span>★</span><span>✦</span><span>★</span><span>✦</span><span>★</span>
+              </div>
+            </div>
+          </header>
+
+          <!-- Dedicated Scrollable Letter Container with Internal Scroll -->
+          <div class="letter-scroll-wrapper" id="letterScrollWrapper" tabindex="0" role="region" aria-label="Birthday message letter content. Scroll to read.">
+            <div class="letter-body" id="birthdayMessageContainer">
+              <!-- Dynamic typewriter / progressive text rendered by script.js -->
+              <div class="message-loading">
+                <span>Summoning magic starlight...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subtle Scroll Indicator Hint -->
+          <div class="letter-scroll-hint" id="letterScrollHint" aria-hidden="true">
+            <span class="hint-bracket">[</span>
+            <span class="hint-text">▼ SCROLL TO READ THE REST ▼</span>
+            <span class="hint-bracket">]</span>
+          </div>
+
+          <footer class="letter-footer">
+            <div class="signature-line">
+              <span class="signature-text">Forever celebrating you,</span>
+              <span class="signature-sparkle">✨ With all my heart, Rey ✨</span>
+            </div>
+          </footer>
+        </article>
+
+        <!-- Interactive Magical Gift Box (Optional Fun Surprise) -->
+        <div class="interactive-gift-zone">
+          <div class="pixel-gift-box" id="pixelGiftBox" role="button" tabindex="0" aria-label="Interactive Gift Box. Click to open!">
+            <div class="gift-lid">
+              <div class="gift-ribbon-bow">🎀</div>
+            </div>
+            <div class="gift-body">
+              <div class="gift-ribbon-vertical"></div>
+              <div class="gift-ribbon-horizontal"></div>
+            </div>
+            <span class="gift-tap-hint">Tap me! 🎁</span>
+          </div>
+          <div id="giftSurpriseModal" class="gift-surprise-popup hidden" aria-live="polite">
+            <p class="gift-quote">"May your year be as radiant, kind, and wonderful as you make the lives around you." 🌟</p>
+          </div>
+        </div>
+
+        <!-- Action Controls Bar -->
+        <div class="celebration-controls">
+          <button type="button" id="replayBtn" class="pixel-btn pixel-btn-primary replay-btn">
+            <span class="btn-icon">↺</span>
+            <span class="btn-text">WATCH IT AGAIN ✨</span>
+          </button>
+          
+          <button type="button" id="extraConfettiBtn" class="pixel-btn pixel-btn-secondary sparkles-btn">
+            <span class="btn-icon">🎉</span>
+            <span class="btn-text">EXTRA SPARKLES ✨</span>
+          </button>
+
+          <button type="button" id="relightCandlesBtn" class="pixel-btn pixel-btn-secondary relight-btn hidden">
+            <span class="btn-icon">🔥</span>
+            <span class="btn-text">RELIGHT CANDLES 🕯️</span>
+          </button>
+        </div>
+
+        <!-- Tiny Footer Note -->
+        <footer class="site-footer">
+          <p>Created with love, Rey, and warm wishes for Raine &bull; 2003 &infin;</p>
+        </footer>
+
+      </div>
+    </section>
+
+    <!-- Retro Pixel Art Ground / Platform at Screen Bottom -->
+    <div class="pixel-ground-stage" aria-hidden="true">
+      <div class="ground-grass-line"></div>
+      <div class="ground-cobblestones">
+        <span class="ground-item deco-flower">🌸</span>
+        <span class="ground-item deco-mushroom">🍄</span>
+        <span class="ground-item deco-lantern">🏮</span>
+        <span class="ground-item deco-star">✦</span>
+        <span class="ground-item deco-chest">📦</span>
+        <span class="ground-item deco-star">✦</span>
+        <span class="ground-item deco-lantern">🏮</span>
+        <span class="ground-item deco-mushroom">🍄</span>
+        <span class="ground-item deco-flower">🌸</span>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+</html>
