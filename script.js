@@ -1348,8 +1348,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Hint Modal Interactions ---
   function openHintModal() {
     audioEngine.playClick();
+    document.body.classList.add('modal-open');
+    document.documentElement.classList.add('modal-open');
     hintBackdrop.classList.remove('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'false');
+    hintBackdrop.scrollTop = 0;
     closeHintBtn.focus();
     if (starGame) {
       if (!starGame.isUnlocked) {
@@ -1361,6 +1364,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeHintModal() {
     audioEngine.playClick();
+    document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('modal-open');
     if (starGame) starGame.stop();
     hintBackdrop.classList.add('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'true');
@@ -1373,9 +1378,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (closeHintBtn) closeHintBtn.addEventListener('click', closeHintModal);
 
   if (hintBackdrop) {
+    let pointerDownTarget = null;
+    let pointerDownY = 0;
+
+    hintBackdrop.addEventListener('pointerdown', (e) => {
+      pointerDownTarget = e.target;
+      pointerDownY = e.clientY;
+    });
+
     hintBackdrop.addEventListener('click', (e) => {
-      if (e.target === hintBackdrop) {
-        closeHintModal();
+      if (e.target === hintBackdrop && pointerDownTarget === hintBackdrop) {
+        const moved = Math.abs(e.clientY - pointerDownY);
+        if (moved < 8) {
+          closeHintModal();
+        }
       }
     });
   }
