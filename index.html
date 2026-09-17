@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=2026.1">
+  <link rel="stylesheet" href="./style.css?v=2026.2">
 </head>
 <body>
   <!-- Ambient Audio Indicator / Toggle -->
@@ -188,7 +188,7 @@
             <span class="hint-badge-star">★</span>
           </div>
           <h2 id="hintTitle" class="hint-title">STAR CATCHER ARCADE</h2>
-          <p class="hint-subtitle">Catch 3 falling stars to unlock the secret hint! ⭐</p>
+          <p class="hint-subtitle">Catch 23 falling stars to unlock the secret hint! ⭐</p>
         </div>
 
         <!-- Arcade Mini Game Container -->
@@ -196,7 +196,7 @@
           <!-- Game HUD -->
           <div class="minigame-hud">
             <div class="hud-box"><span class="hud-tag">SCORE</span> <span id="gameScore" class="hud-num">0</span></div>
-            <div class="hud-box goal"><span class="hud-tag">GOAL</span> <span class="hud-num gold">3 ⭐</span></div>
+            <div class="hud-box goal"><span class="hud-tag">GOAL</span> <span class="hud-num gold">23 ⭐</span></div>
             <div class="hud-box"><span class="hud-tag">BEST</span> <span id="gameHighScore" class="hud-num">0</span></div>
           </div>
 
@@ -229,10 +229,7 @@
             <div class="lock-progress-bar-container" aria-label="Hint Unlock Progress">
               <div id="lockProgressFill" class="lock-progress-fill" style="width: 0%"></div>
             </div>
-            <p id="lockSubtext" class="lock-subtext">Catch <span id="starsNeededText">3</span> stars to reveal the clue!</p>
-            <button type="button" id="skipGameBtn" class="skip-game-btn" aria-label="Skip game and show hint immediately">
-              Skip game &amp; reveal clue ⏩
-            </button>
+            <p id="lockSubtext" class="lock-subtext">Catch <span id="starsNeededText">23</span> stars to reveal the clue!</p>
           </div>
 
           <!-- Unlocked State -->
@@ -605,6 +602,6 @@
 
   </main>
 
-  <script src="./script.js?v=2026.1"></script>
+  <script src="./script.js?v=2026.2"></script>
 </body>
 </html>
