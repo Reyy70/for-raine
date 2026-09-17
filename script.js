@@ -801,7 +801,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const hintUnlockedBox = document.getElementById('hintUnlockedBox');
   const lockProgressFill = document.getElementById('lockProgressFill');
   const starsNeededText = document.getElementById('starsNeededText');
-  const skipGameBtn = document.getElementById('skipGameBtn');
 
   // DOM Elements - Stage 2 (Celebration)
   const celebrationStage = document.getElementById('celebrationStage');
@@ -914,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.animId = null;
 
       this.score = 0;
-      this.targetScore = 3;
+      this.targetScore = 23;
       this.highScore = 0;
       try {
         this.highScore = parseInt(localStorage.getItem('raine_star_highscore') || '0', 10);
@@ -928,7 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
         y: 152,
         w: 56,
         h: 18,
-        speed: 6.5
+        speed: 6.8
       };
 
       this.items = [];
@@ -1055,6 +1054,21 @@ document.addEventListener('DOMContentLoaded', () => {
       this.isPointerDown = false;
     }
 
+    reset() {
+      this.score = 0;
+      this.isUnlocked = false;
+      this.items = [];
+      this.particles = [];
+      this.catcher.x = (this.width - this.catcher.w) / 2;
+      if (hintLockedBox) hintLockedBox.classList.remove('hidden');
+      if (hintUnlockedBox) hintUnlockedBox.classList.add('hidden');
+      if (closeHintBtn) {
+        const textSpan = closeHintBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = "Back to Secret Code";
+      }
+      this.updateHud();
+    }
+
     update() {
       // Button/Keyboard movement
       if (this.keys.left) {
@@ -1076,9 +1090,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Spawn items (stars and rare hearts)
       this.spawnTimer++;
-      if (this.spawnTimer > 40) {
+      if (this.spawnTimer > 28) {
         this.spawnTimer = 0;
-        const isHeart = Math.random() < 0.22;
+        const isHeart = Math.random() < 0.25;
         this.items.push({
           x: 15 + Math.random() * (this.width - 30),
           y: -14,
@@ -1182,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (closeHintBtn) {
         const textSpan = closeHintBtn.querySelector('.btn-text');
-        if (textSpan) textSpan.textContent = "Got the Hint! ✨";
+        if (textSpan) textSpan.textContent = "Use Hint (2003) & Close ✨";
       }
     }
 
@@ -1294,7 +1308,12 @@ document.addEventListener('DOMContentLoaded', () => {
     hintBackdrop.classList.remove('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'false');
     closeHintBtn.focus();
-    if (starGame) starGame.start();
+    if (starGame) {
+      if (!starGame.isUnlocked) {
+        starGame.reset();
+      }
+      starGame.start();
+    }
   }
 
   function closeHintModal() {
