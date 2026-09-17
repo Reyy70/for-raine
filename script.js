@@ -791,7 +791,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // DOM Elements - Hint Modal & Star Catcher Mini-Game
   const hintBackdrop = document.getElementById('hintBackdrop');
+  const hintDialog = document.getElementById('hintDialog');
   const closeHintBtn = document.getElementById('closeHintBtn');
+  const closeHintTopBtn = document.getElementById('closeHintTopBtn');
   const miniGameCanvas = document.getElementById('miniGameCanvas');
   const gameScore = document.getElementById('gameScore');
   const gameHighScore = document.getElementById('gameHighScore');
@@ -1216,6 +1218,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (hintLockedBox && hintUnlockedBox) {
         hintLockedBox.classList.add('hidden');
         hintUnlockedBox.classList.remove('hidden');
+        setTimeout(() => {
+          try {
+            hintUnlockedBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          } catch(err){}
+        }, 150);
       }
 
       if (closeHintBtn) {
@@ -1345,15 +1352,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const starGame = miniGameCanvas ? new StarCatcherMiniGame(miniGameCanvas) : null;
 
-  // --- Hint Modal Interactions ---
-  function openHintModal() {
-    audioEngine.playClick();
+  // --- Hint Modal Interactions & Mobile Scroll Locking ---
+  let savedBodyScrollY = 0;
+
+  function lockBodyScroll() {
+    savedBodyScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${savedBodyScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
     document.body.classList.add('modal-open');
     document.documentElement.classList.add('modal-open');
+  }
+
+  function unlockBodyScroll() {
+    document.body.style.removeProperty('position');
+    document.body.style.removeProperty('top');
+    document.body.style.removeProperty('left');
+    document.body.style.removeProperty('right');
+    document.body.style.removeProperty('width');
+    document.body.style.removeProperty('overflow');
+    document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('modal-open');
+    window.scrollTo(0, savedBodyScrollY);
+  }
+
+  function openHintModal() {
+    audioEngine.playClick();
+    lockBodyScroll();
     hintBackdrop.classList.remove('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'false');
-    hintBackdrop.scrollTop = 0;
-    closeHintBtn.focus();
+    if (hintDialog) hintDialog.scrollTop = 0;
+    if (closeHintBtn) closeHintBtn.focus();
     if (starGame) {
       if (!starGame.isUnlocked) {
         starGame.reset();
@@ -1364,8 +1396,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeHintModal() {
     audioEngine.playClick();
-    document.body.classList.remove('modal-open');
-    document.documentElement.classList.remove('modal-open');
+    unlockBodyScroll();
     if (starGame) starGame.stop();
     hintBackdrop.classList.add('hidden');
     hintBackdrop.setAttribute('aria-hidden', 'true');
@@ -1376,6 +1407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (hintModalBtn) hintModalBtn.addEventListener('click', openHintModal);
   if (closeHintBtn) closeHintBtn.addEventListener('click', closeHintModal);
+  if (closeHintTopBtn) closeHintTopBtn.addEventListener('click', closeHintModal);
 
   if (hintBackdrop) {
     let pointerDownTarget = null;
@@ -1394,6 +1426,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    // Prevent iOS background drag when touching the backdrop overlay
+    hintBackdrop.addEventListener('touchmove', (e) => {
+      if (e.target === hintBackdrop) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   }
 
   document.addEventListener('keydown', (e) => {
