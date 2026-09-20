@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=2026.6">
+  <link rel="stylesheet" href="./style.css?v=2026.7">
 </head>
 <body>
   <!-- Ambient Audio Indicator / Toggle -->
@@ -29,6 +29,10 @@
     <button id="soundToggleBtn" class="pixel-btn-icon" aria-label="Toggle Sound Effects" title="Toggle Sound Effects">
       <span class="sfx-icon" aria-hidden="true">🔊</span>
       <span class="sfx-text">SFX: ON</span>
+    </button>
+    <button id="favSongBarBtn" class="pixel-btn-icon fav-song-bar-btn" aria-label="Play Favorite Song: UNETHICAL by Faouzia" title="Play Favorite Song">
+      <span class="music-icon" aria-hidden="true">💖</span>
+      <span class="fav-text">Play Favorite Song</span>
     </button>
   </aside>
 
@@ -258,6 +262,72 @@
         <div class="hint-actions">
           <button type="button" id="closeHintBtn" class="pixel-btn pixel-btn-primary modal-close-btn">
             <span class="btn-text">Back to Secret Code</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         FAVORITE SONG MODAL: "UNETHICAL" BY FAOUZIA
+         ============================================== -->
+    <div id="favoriteSongBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+      <div 
+        id="favoriteSongDialog" 
+        class="pixel-card fav-song-modal" 
+        role="dialog" 
+        aria-modal="true" 
+        aria-labelledby="favSongTitle" 
+        aria-describedby="favSongArtist"
+      >
+        <div class="modal-corner top-left" aria-hidden="true"></div>
+        <div class="modal-corner top-right" aria-hidden="true"></div>
+        <div class="modal-corner bottom-left" aria-hidden="true"></div>
+        <div class="modal-corner bottom-right" aria-hidden="true"></div>
+
+        <!-- Sticky Top Corner Close Button -->
+        <button type="button" id="closeFavSongTopBtn" class="modal-close-top-btn" aria-label="Close music player">
+          <span aria-hidden="true">✕</span>
+        </button>
+
+        <div class="fav-song-header">
+          <div class="cassette-tape-deco" aria-hidden="true">
+            <span class="cassette-reel reel-left">⚙</span>
+            <span class="cassette-label">RAINE'S FAVORITE TRACK</span>
+            <span class="cassette-reel reel-right">⚙</span>
+          </div>
+          <h2 id="favSongTitle" class="fav-song-title">UNETHICAL</h2>
+          <p id="favSongArtist" class="fav-song-artist">By Faouzia &bull; <em>FILM NOIR</em> 💖</p>
+          <div class="equalizer-bars" aria-hidden="true">
+            <span class="eq-bar eq-1"></span>
+            <span class="eq-bar eq-2"></span>
+            <span class="eq-bar eq-3"></span>
+            <span class="eq-bar eq-4"></span>
+            <span class="eq-bar eq-5"></span>
+            <span class="eq-bar eq-6"></span>
+          </div>
+        </div>
+
+        <!-- Embedded Music Player Frame -->
+        <div class="fav-song-player-wrapper" id="favSongPlayerWrapper">
+          <iframe 
+            id="favSongIframe" 
+            class="fav-song-iframe" 
+            src="" 
+            title="Faouzia - UNETHICAL Official Music Video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <!-- Player Actions -->
+        <div class="fav-song-actions">
+          <button type="button" id="minimizeFavSongBtn" class="pixel-btn pixel-btn-secondary fav-action-btn">
+            <span class="btn-icon">💌</span>
+            <span class="btn-text">Keep Playing & Read Letter</span>
+          </button>
+          <button type="button" id="closeFavSongBtn" class="pixel-btn pixel-btn-primary fav-action-btn stop-song-btn">
+            <span class="btn-icon">⏹</span>
+            <span class="btn-text">Stop Song & Close</span>
           </button>
         </div>
       </div>
@@ -565,7 +635,12 @@
 
         <!-- Action Controls Bar -->
         <div class="celebration-controls">
-          <button type="button" id="replayBtn" class="pixel-btn pixel-btn-primary replay-btn">
+          <button type="button" id="playFavoriteSongBtn" class="pixel-btn pixel-btn-primary fav-song-btn">
+            <span class="btn-icon">💖</span>
+            <span class="btn-text">Play Favorite Song</span>
+          </button>
+
+          <button type="button" id="replayBtn" class="pixel-btn pixel-btn-secondary replay-btn">
             <span class="btn-icon">↺</span>
             <span class="btn-text">WATCH IT AGAIN ✨</span>
           </button>
@@ -605,8 +680,32 @@
       </div>
     </div>
 
+    <!-- Floating Persistent Jukebox Widget (Visible when song minimized while reading letter) -->
+    <aside id="floatingMusicBar" class="floating-music-bar hidden" role="region" aria-label="Currently Playing Favorite Song">
+      <div class="floating-music-inner">
+        <div class="mini-eq" aria-hidden="true">
+          <span class="m-bar m-1"></span>
+          <span class="m-bar m-2"></span>
+          <span class="m-bar m-3"></span>
+          <span class="m-bar m-4"></span>
+        </div>
+        <div class="floating-music-meta">
+          <span class="floating-track-tag">FAVORITE SONG</span>
+          <span class="floating-track-title">UNETHICAL &bull; Faouzia 🎵</span>
+        </div>
+        <div class="floating-music-btns">
+          <button type="button" id="expandFavSongBtn" class="pixel-btn-mini view-btn" aria-label="Expand music player window">
+            ⤢ VIEW
+          </button>
+          <button type="button" id="stopFloatingFavSongBtn" class="pixel-btn-mini stop-btn" aria-label="Stop playing favorite song">
+            ✕ STOP
+          </button>
+        </div>
+      </div>
+    </aside>
+
   </main>
 
-  <script src="./script.js?v=2026.6"></script>
+  <script src="./script.js?v=2026.7"></script>
 </body>
 </html>
