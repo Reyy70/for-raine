@@ -833,9 +833,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Audio Controls
+  // Audio Controls & Favorite Song Elements
   const musicToggleBtn = document.getElementById('musicToggleBtn');
   const soundToggleBtn = document.getElementById('soundToggleBtn');
+  const favSongBarBtn = document.getElementById('favSongBarBtn');
+  const playFavoriteSongBtn = document.getElementById('playFavoriteSongBtn');
+  const favoriteSongBackdrop = document.getElementById('favoriteSongBackdrop');
+  const favoriteSongDialog = document.getElementById('favoriteSongDialog');
+  const favSongIframe = document.getElementById('favSongIframe');
+  const closeFavSongTopBtn = document.getElementById('closeFavSongTopBtn');
+  const minimizeFavSongBtn = document.getElementById('minimizeFavSongBtn');
+  const closeFavSongBtn = document.getElementById('closeFavSongBtn');
+  const floatingMusicBar = document.getElementById('floatingMusicBar');
+  const expandFavSongBtn = document.getElementById('expandFavSongBtn');
+  const stopFloatingFavSongBtn = document.getElementById('stopFloatingFavSongBtn');
 
   // Canvases
   const skyCanvas = document.getElementById('skyCanvas');
@@ -872,6 +883,10 @@ document.addEventListener('DOMContentLoaded', () => {
       musicToggleBtn.querySelector('.music-text').textContent = 'Music: OFF';
       musicToggleBtn.classList.remove('music-playing');
     } else {
+      // If favorite song is currently playing, stop it so tracks don't clash
+      if (favSongIframe && favSongIframe.src && favSongIframe.src !== 'about:blank' && !favSongIframe.src.endsWith('#stopped')) {
+        stopFavoriteSong();
+      }
       audioEngine.startMusic();
       musicToggleBtn.querySelector('.music-text').textContent = 'Music: ON';
       musicToggleBtn.classList.add('music-playing');
@@ -1352,33 +1367,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const starGame = miniGameCanvas ? new StarCatcherMiniGame(miniGameCanvas) : null;
 
-  // --- Hint Modal Interactions & Mobile Scroll Locking ---
+  // --- Modals, Scroll Locking & Favorite Song Controls ---
+  let isBodyScrollLocked = false;
   let savedBodyScrollY = 0;
 
   function lockBodyScroll() {
-    savedBodyScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${savedBodyScrollY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('modal-open');
-    document.documentElement.classList.add('modal-open');
+    if (!isBodyScrollLocked) {
+      savedBodyScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${savedBodyScrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
+      document.documentElement.classList.add('modal-open');
+      isBodyScrollLocked = true;
+    }
   }
 
   function unlockBodyScroll() {
-    document.body.style.removeProperty('position');
-    document.body.style.removeProperty('top');
-    document.body.style.removeProperty('left');
-    document.body.style.removeProperty('right');
-    document.body.style.removeProperty('width');
-    document.body.style.removeProperty('overflow');
-    document.body.classList.remove('modal-open');
-    document.documentElement.classList.remove('modal-open');
-    window.scrollTo(0, savedBodyScrollY);
+    if (isBodyScrollLocked) {
+      document.body.style.removeProperty('position');
+      document.body.style.removeProperty('top');
+      document.body.style.removeProperty('left');
+      document.body.style.removeProperty('right');
+      document.body.style.removeProperty('width');
+      document.body.style.removeProperty('overflow');
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+      isBodyScrollLocked = false;
+      window.scrollTo(0, savedBodyScrollY);
+    }
   }
 
+  // --- Hint Modal Interactions ---
   function openHintModal() {
     audioEngine.playClick();
     lockBodyScroll();
@@ -1435,9 +1458,145 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: false });
   }
 
+  // --- Favorite Song ("UNETHICAL" by Faouzia) Handlers ---
+  const FAV_SONG_EMBED_URL = 'https://www.youtube-nocookie.com/embed/I1zqCX3Dvxo?autoplay=1&playsinline=1&enablejsapi=1';
+
+  function playFavoriteSong() {
+    audioEngine.playSparklePop();
+
+    // Pause 8-bit chiptune background music to prevent audio clash
+    if (audioEngine.isMusicPlaying) {
+      audioEngine.stopMusic();
+      if (musicToggleBtn) {
+        const txt = musicToggleBtn.querySelector('.music-text');
+        if (txt) txt.textContent = 'Music: OFF';
+        musicToggleBtn.classList.remove('music-playing');
+      }
+    }
+
+    // Set YouTube embed src if not already loaded
+    if (favSongIframe && (!favSongIframe.src || favSongIframe.src === 'about:blank' || !favSongIframe.src.includes('I1zqCX3Dvxo'))) {
+      favSongIframe.src = FAV_SONG_EMBED_URL;
+    }
+
+    // Hide floating jukebox bar if open
+    if (floatingMusicBar) {
+      floatingMusicBar.classList.add('hidden');
+    }
+
+    // Show modal dialog and lock background scroll
+    if (favoriteSongBackdrop) {
+      favoriteSongBackdrop.classList.remove('hidden');
+      favoriteSongBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    if (favoriteSongDialog) {
+      favoriteSongDialog.scrollTop = 0;
+    }
+    lockBodyScroll();
+
+    // Sparkle burst
+    partyEngine.burst(window.innerWidth / 2, window.innerHeight * 0.45, 60);
+  }
+
+  function minimizeFavoriteSong() {
+    audioEngine.playClick();
+
+    // Hide modal backdrop and restore body scroll
+    if (favoriteSongBackdrop) {
+      favoriteSongBackdrop.classList.add('hidden');
+      favoriteSongBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    unlockBodyScroll();
+
+    // Reveal floating bottom bar so track keeps playing while reading letter
+    if (floatingMusicBar) {
+      floatingMusicBar.classList.remove('hidden');
+    }
+  }
+
+  function expandFavoriteSong() {
+    audioEngine.playClick();
+
+    // Hide floating bottom bar
+    if (floatingMusicBar) {
+      floatingMusicBar.classList.add('hidden');
+    }
+
+    // Show modal dialog
+    if (favoriteSongBackdrop) {
+      favoriteSongBackdrop.classList.remove('hidden');
+      favoriteSongBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    if (favoriteSongDialog) {
+      favoriteSongDialog.scrollTop = 0;
+    }
+    lockBodyScroll();
+  }
+
+  function stopFavoriteSong() {
+    audioEngine.playClick();
+
+    // Terminate playback immediately by wiping src
+    if (favSongIframe) {
+      favSongIframe.src = '';
+    }
+
+    // Hide floating bar and modal backdrop
+    if (floatingMusicBar) {
+      floatingMusicBar.classList.add('hidden');
+    }
+    if (favoriteSongBackdrop) {
+      favoriteSongBackdrop.classList.add('hidden');
+      favoriteSongBackdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    unlockBodyScroll();
+  }
+
+  // Favorite Song Event Listeners
+  if (favSongBarBtn) favSongBarBtn.addEventListener('click', playFavoriteSong);
+  if (playFavoriteSongBtn) playFavoriteSongBtn.addEventListener('click', playFavoriteSong);
+  if (closeFavSongTopBtn) closeFavSongTopBtn.addEventListener('click', minimizeFavoriteSong);
+  if (minimizeFavSongBtn) minimizeFavSongBtn.addEventListener('click', minimizeFavoriteSong);
+  if (closeFavSongBtn) closeFavSongBtn.addEventListener('click', stopFavoriteSong);
+  if (expandFavSongBtn) expandFavSongBtn.addEventListener('click', expandFavoriteSong);
+  if (stopFloatingFavSongBtn) stopFloatingFavSongBtn.addEventListener('click', stopFavoriteSong);
+
+  // Favorite Song Backdrop interactions
+  if (favoriteSongBackdrop) {
+    let songPointerTarget = null;
+    let songPointerY = 0;
+
+    favoriteSongBackdrop.addEventListener('pointerdown', (e) => {
+      songPointerTarget = e.target;
+      songPointerY = e.clientY;
+    });
+
+    favoriteSongBackdrop.addEventListener('click', (e) => {
+      if (e.target === favoriteSongBackdrop && songPointerTarget === favoriteSongBackdrop) {
+        const moved = Math.abs(e.clientY - songPointerY);
+        if (moved < 8) {
+          // Minimizing to floating jukebox ensures song is not accidentally cut off
+          minimizeFavoriteSong();
+        }
+      }
+    });
+
+    favoriteSongBackdrop.addEventListener('touchmove', (e) => {
+      if (e.target === favoriteSongBackdrop) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+
+  // Global Escape Key Listener for Modals
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && hintBackdrop && !hintBackdrop.classList.contains('hidden')) {
-      closeHintModal();
+    if (e.key === 'Escape') {
+      if (favoriteSongBackdrop && !favoriteSongBackdrop.classList.contains('hidden')) {
+        minimizeFavoriteSong();
+      } else if (hintBackdrop && !hintBackdrop.classList.contains('hidden')) {
+        closeHintModal();
+      }
     }
   });
 
